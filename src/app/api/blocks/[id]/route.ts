@@ -4,13 +4,13 @@ import { getDb } from "@/lib/mongo";
 import { createClient } from "@/utils/supabase/server";
 
 export async function DELETE(
-    req: NextRequest,
-    { params }: { params: { id: string } }
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
     // Create Supabase client with cookie-based session from request
     const supabase = await createClient();
 
-
+    const { id } = await context.params;
 
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -20,7 +20,7 @@ export async function DELETE(
 
     const db = await getDb();
     const col = db.collection('quiet_blocks');
-    const _id = new ObjectId(await params.id);
+    const _id = new ObjectId(id);
 
     // Delete the quiet block only if it belongs to the authenticated user
     const result = await col.deleteOne({ _id, user_id: user.id });
