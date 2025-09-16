@@ -10,7 +10,7 @@ export async function DELETE(
     // Create Supabase client with cookie-based session from request
     const supabase = await createClient();
 
-    const { id } = await context.params;
+    const { id } = (await context.params) as { id: string };
 
     const { data: { user } } = await supabase.auth.getUser();
 
