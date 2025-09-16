@@ -1,8 +1,8 @@
 "use client";
 
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
-import { supabase } from "@/lib/supabase-client";
-import { Geist, Geist_Mono } from "next/font/google";
+import { createClient } from "@/utils/supabase/client";
+import { Geist, Geist_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,6 +15,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const poppins = Poppins({
+
+  variable: "--font-poppins",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"]
+})
+
 
 
 export default function RootLayout({
@@ -25,9 +32,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} antialiased`}
       >
-        <SessionContextProvider supabaseClient={supabase}>
+        <SessionContextProvider supabaseClient={createClient()}>
           {children}
         </SessionContextProvider>
       </body>
