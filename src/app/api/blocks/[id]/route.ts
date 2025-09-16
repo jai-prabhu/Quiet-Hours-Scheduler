@@ -7,10 +7,9 @@ export async function DELETE(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-    // Create Supabase client with cookie-based session from request
-    const supabase = await createClient();
+  const { id } = await context.params; // ⬅️ await the promised params
 
-    const { id } = (await context.params) as { id: string };
+    const supabase = await createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
 
