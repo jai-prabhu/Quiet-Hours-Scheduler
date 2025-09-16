@@ -4,10 +4,10 @@ import sgMail from "@sendgrid/mail";
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
 
-export const runtime = "nodejs"; // ensure Node runtime on Vercel
+export const runtime = "nodejs";
 
 export async function POST(req: Request) {
-  // Simple auth for the cron call
+
   const auth = req.headers.get("authorization") || "";
   const ok = auth === `Bearer ${process.env.CRON_SECRET}`;
   if (!ok) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   const limit = 100; // per run
 
   for (let i = 0; i < limit; i++) {
-    // Lease one due document atomically to avoid duplicates
+
     const leased = await col.findOneAndUpdate(
       {
         status: "pending",
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
 
       await sgMail.send({
         to: b.userEmail,
-        from: process.env.FROM_EMAIL!, // must be verified in SendGrid
+        from: process.env.FROM_EMAIL!,
         subject,
         html,
       });
@@ -61,17 +61,15 @@ export async function POST(req: Request) {
       );
       processed++;
     } catch (e) {
-      // Release the lease so it retries next run
+
       await col.updateOne({ _id: b._id }, { $set: { status: "pending" } });
-      // Optional: log errors to a collection
-      // await db.collection("notify_errors").insertOne({ blockId: b._id, err: String(e), at: new Date() })
+
     }
   }
 
   return NextResponse.json({ ok: true, processed });
 }
 
-// Optional GET to test quickly in the browser (remove in prod)
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const token = url.searchParams.get("token");
