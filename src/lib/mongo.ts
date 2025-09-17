@@ -57,6 +57,59 @@ export async function getDb(): Promise<Db> {
   // Create indexes once; if they already exist this is cheap
   await db.collection('quiet_blocks').createIndex({ user_id: 1, startAt: 1 }, { unique: true });
   await db.collection('quiet_blocks').createIndex({ notifyAt: 1, status: 1 });
+  db.collection('quiet_blocks').updateMany(
+  {},
+  [{
+    $set: {
+      notifyAt: {
+        $cond: [
+          { $ne: [{ $type: "$notifyAt" }, "date"] },
+          { $convert: { input: "$notifyAt", to: "date", onError: "$notifyAt", onNull: "$notifyAt" } },
+          "$notifyAt"
+        ]
+      },
+      startAt: {
+        $cond: [
+          { $ne: [{ $type: "$startAt" }, "date"] },
+          { $convert: { input: "$startAt", to: "date", onError: "$startAt", onNull: "$startAt" } },
+          "$startAt"
+        ]
+      },
+      endAt: {
+        $cond: [
+          { $ne: [{ $type: "$endAt" }, "date"] },
+          { $convert: { input: "$endAt", to: "date", onError: "$endAt", onNull: "$endAt" } },
+          "$endAt"
+        ]
+      },
+      createdAt: {
+        $cond: [
+          { $ne: [{ $type: "$createdAt" }, "date"] },
+          { $convert: { input: "$createdAt", to: "date", onError: "$createdAt", onNull: "$createdAt" } },
+          "$createdAt"
+        ]
+      },
+      updatedAt: {
+        $cond: [
+          { $ne: [{ $type: "$updatedAt" }, "date"] },
+          { $convert: { input: "$updatedAt", to: "date", onError: "$updatedAt", onNull: "$updatedAt" } },
+          "$updatedAt"
+        ]
+      },
+      // optional: notifiedAt may be null or string → keep null or convert
+      notifiedAt: {
+        $cond: [
+          { $or: [
+            { $eq: ["$notifiedAt", null] },
+            { $eq: [{ $type: "$notifiedAt" }, "date"] }
+          ]},
+          "$notifiedAt",
+          { $convert: { input: "$notifiedAt", to: "date", onError: "$notifiedAt", onNull: "$notifiedAt" } }
+        ]
+      }
+    }
+  }]
+)
 
   cached = { client, db };
   return db;
