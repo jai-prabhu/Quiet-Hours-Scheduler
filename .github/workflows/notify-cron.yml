@@ -24,6 +24,6 @@ jobs:
           -H "Content-Type: application/json" \
           --data "{}" || true)
         echo "HTTP status $STATUS"
-        echp "Response body:"
+        echo "Response body:"
         cat /tmp/out.json || true
         test "$STATUS" = "200"
