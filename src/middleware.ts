@@ -1,8 +1,15 @@
-import { type NextRequest } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/utils/supabase/middleware'
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request)
+  const p = request.nextUrl.pathname
+
+  // skip preflight and API (or just specific routes)
+  if (request.method === 'OPTIONS') return NextResponse.next()
+  if (p.startsWith('/api')) return NextResponse.next()
+  // or: if (p.startsWith('/api/notify') || p.startsWith('/api/quiet')) return NextResponse.next()
+
+  return updateSession(request)
 }
 
 export const config = {
