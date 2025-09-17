@@ -35,20 +35,25 @@ export async function POST(req: Request) {
   const db = await getDb();
   const col = db.collection("quiet_blocks");
 
-  const now = new Date();
-  const inOneMinute = new Date(now.getTime() + 60_000);
+const now = new Date();
+const windowEnd = new Date(now.getTime() + 60_000);
 
   let processed = 0;
   const limit = 100;
 
   for (let i = 0; i < limit; i++) {
+
+    
+
     const leased = await col.findOneAndUpdate(
       {
         status: "pending",
-        notifiedAt: null,
-        $or: [{ leaseUntil: { $exists: false } }, { leaseUntil: { $lte: now } }],
-        // IMPORTANT: Date -> Date compare (NOT string)
-        notifyAt: { $lte: inOneMinute },
+        $and: [
+            { $or: [ { notifiedAt: null }, { notifiedAt: { $exists: false } } ] },
+            { $or: [ { leaseUntil: { $exists: false } }, { leaseUntil: { $lte: now } } ] },
+            // Coerce notifyAt to Date at query time (works if stored as string or number)
+            { $expr: { $lte: [ { $toDate: "$notifyAt" }, windowEnd ] } },
+        ],
       },
       {
         $set: { status: "processing", leaseUntil: new Date(now.getTime() + 2 * 60_000) },
@@ -59,7 +64,7 @@ export async function POST(req: Request) {
     const b = leased?.value;
     if (!b) {
     
-        console.log("Ca't find the data: ");
+        console.log("Ca't find the data: ", windowEnd.toDateString());
         break;
     };
 
@@ -92,7 +97,7 @@ export async function POST(req: Request) {
     }
   }
 
-  return NextResponse.json({ ok: true, processed, windowTo: inOneMinute.toISOString() });
+  return NextResponse.json({ ok: true, processed, windowTo: windowEnd.toISOString() });
 }
 
 export async function GET(req: Request) {
