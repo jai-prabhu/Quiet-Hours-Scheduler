@@ -134,19 +134,42 @@ export async function POST(req: Request) {
 
 
     const leased = await col.findOneAndUpdate(
-      {
-        status: "pending",
+    {
         $and: [
-            { $or: [ { notifiedAt: null }, { notifiedAt: { $exists: false } } ] },
-            { $or: [ { leaseUntil: { $exists: false } }, { leaseUntil: { $lte: now } } ] },
-            // Coerce notifyAt to Date at query time (works if stored as string or number)
-            { $expr: { $lte: [ { $toDate: "$notifyAt" }, windowEnd ] } },
-        ],
-      },
-      {
-        $set: { status: "processing", leaseUntil: new Date(now.getTime() + 2 * 60_000) },
-      },
-      { sort: { notifyAt: 1 }, returnDocument: "after" }
+        // eligible status:
+        {
+            $or: [
+            { status: "pending" },                                   // normal case
+            {                                                        // reclaim stuck jobs
+                $and: [
+                { status: "processing" },
+                {
+                    // lease missing OR expired (works with string or Date)
+                    $or: [
+                    { leaseUntil: { $exists: false } },
+                    { $expr: { $lte: [ { $toDate: "$leaseUntil" }, now ] } }
+                    ]
+                }
+                ]
+            }
+            ]
+        },
+
+        // not already notified
+        { $or: [ { notifiedAt: null }, { notifiedAt: { $exists: false } } ] },
+
+        // due by time (you store strings, so ISO string compare is fine)
+        { notifyAt: { $lte: windowEndISO } }
+        ]
+    },
+    {
+        $set: {
+        status: "processing",
+        // keep types consistent with your string schema
+        leaseUntil: new Date(Date.now() + 2 * 60_000).toISOString()
+        }
+    },
+    { sort: { notifyAt: 1 }, returnDocument: "after" }
     );
 
     const b = leased?.value;
