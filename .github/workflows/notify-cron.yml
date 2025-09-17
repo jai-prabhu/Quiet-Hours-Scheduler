@@ -1,0 +1,27 @@
+name: Notify Cron
+
+on:
+  schedule:
+    - cron: "* * * * *"   # every minute (UTC)
+  workflow_dispatch:       # allows manual run
+
+jobs:
+  ping-notify:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: notify-cron
+      cancel-in-progress: true
+    timeout-minutes: 2
+    steps:
+      - name: Call /api/notify
+        env:
+          URL: ${{ secrets.NOTIFY_URL }}
+          SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          STATUS=$(curl -s -o /tmp/out.json -w "%{http_code}" \
+            -X POST "$URL" \
+            -H "Authorization: Bearer $SECRET" \
+            -H "Content-Type: application/json" \
+            --data "{}" || true)
+          cat /tmp/out.json || true
+          test "$STATUS" = "200"
