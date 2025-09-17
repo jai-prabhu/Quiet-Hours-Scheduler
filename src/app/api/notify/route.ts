@@ -101,11 +101,11 @@ export async function POST(req: Request) {
     if (!b) {
     
         console.log("Ca't find the data: i = ", i, " ",  windowEnd.toLocaleString());
-        continue;
+        break;
     };
 
     try {
-      if (!b.userEmail) {
+      if (!b.user_email) {
         console.log("Failes to get the Email")
         throw new Error("Missing userEmail")
     };
@@ -117,7 +117,7 @@ export async function POST(req: Request) {
         <p><small>${new Date(b.startAt).toLocaleString()} → ${new Date(b.endAt).toLocaleString()}</small></p>
       `;
 
-      await sgMail.send({ to: b.userEmail, from, subject, html });
+      await sgMail.send({ to: b.user_email, from, subject, html });
 
       await col.updateOne(
         { _id: b._id },
