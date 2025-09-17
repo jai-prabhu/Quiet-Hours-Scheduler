@@ -3,6 +3,9 @@ import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongo";
 import { createClient } from "@/utils/supabase/server";
 
+export const runtime = "nodejs";
+
+
 export async function DELETE(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }

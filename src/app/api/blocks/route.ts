@@ -5,6 +5,9 @@ import utc from "dayjs/plugin/utc";
 import { createClient } from "@/utils/supabase/server";
 dayjs.extend(utc);
 
+export const runtime = "nodejs";
+
+
 export async function GET(req: NextRequest) {
 
   const supabase = await createClient()
