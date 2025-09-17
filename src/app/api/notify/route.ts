@@ -135,32 +135,7 @@ export async function POST(req: Request) {
 
     const leased = await col.findOneAndUpdate(
     {
-        $and: [
-        // eligible status:
-        {
-            $or: [
-            { status: "pending" },                                   // normal case
-            {                                                        // reclaim stuck jobs
-                $and: [
-                { status: "processing" },
-                {
-                    // lease missing OR expired (works with string or Date)
-                    $or: [
-                    { leaseUntil: { $exists: false } },
-                    { $expr: { $lte: [ { $toDate: "$leaseUntil" }, now ] } }
-                    ]
-                }
-                ]
-            }
-            ]
-        },
-
-        // not already notified
-        { $or: [ { notifiedAt: null }, { notifiedAt: { $exists: false } } ] },
-
-        // due by time (you store strings, so ISO string compare is fine)
-        { notifyAt: { $lte: windowEndISO } }
-        ]
+        ...qStatus, ...qNotified, ...qTime
     },
     {
         $set: {
