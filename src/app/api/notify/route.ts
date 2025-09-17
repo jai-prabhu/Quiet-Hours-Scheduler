@@ -57,7 +57,10 @@ export async function POST(req: Request) {
     );
 
     const b = leased?.value;
-    if (!b) break;
+    if (!b) {
+
+        NextResponse.json({ ok: true, processed }, {status: 205})
+    };
 
     try {
       if (!b.userEmail) throw new Error("Missing userEmail");
