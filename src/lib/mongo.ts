@@ -57,7 +57,7 @@ export async function getDb(): Promise<Db> {
   // Create indexes once; if they already exist this is cheap
   await db.collection('quiet_blocks').createIndex({ user_id: 1, startAt: 1 }, { unique: true });
   await db.collection('quiet_blocks').createIndex({ notifyAt: 1, status: 1 });
-  db.collection('quiet_blocks').updateMany(
+  await db.collection('quiet_blocks').updateMany(
   {},
   [{
     $set: {
