@@ -43,7 +43,22 @@ const windowEnd = new Date(now.getTime() + 60_000);
 
   for (let i = 0; i < limit; i++) {
 
-    
+    const windowEndISO = new Date(Date.now() + 60_000).toISOString();
+
+    const qStatus     = { status: "pending" };
+    const qNotified   = { $or: [ { notifiedAt: null }, { notifiedAt: { $exists: false } } ] };
+    const qTime       = { notifyAt: { $lte: windowEndISO } };
+    // const qLease   = { $or: [ { leaseUntil: { $exists: false } }, { leaseUntil: { $lte: new Date().toISOString() } } ] };
+
+    const cTotal    = await col.estimatedDocumentCount();
+    const cStatus   = await col.countDocuments(qStatus);
+    const cNotified = await col.countDocuments(qNotified);
+    const cTime     = await col.countDocuments(qTime);
+    // const cLease = await col.countDocuments(qLease);
+    const cFinal    = await col.countDocuments({ ...qStatus, ...qNotified, ...qTime /*, ...qLease*/ });
+
+    console.log({ cTotal, cStatus, cNotified, cTime, /* cLease, */ cFinal, windowEndISO });
+
 
     const leased = await col.findOneAndUpdate(
       {
