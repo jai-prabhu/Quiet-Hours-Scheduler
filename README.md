@@ -17,7 +17,7 @@ Data is stored in MongoDB.
 - **Frontend**: Next.js (React)
 - **Backend**: Supabase (Auth + Row-Level Security)
 - **Database**: MongoDB
-- **CRON Function**: Supabase Edge Function
+- **CRON Function**: Cron-jobs.org
 
 
 **Features**:
