@@ -84,7 +84,7 @@ export async function POST(req: Request) {
         leaseUntil: new Date(Date.now() + 2 * 60_000).toISOString()
         }
     },
-    { sort: { notifyAt: 1 }, returnDocument: "after" }
+    { sort: { notifyAt: 1 }, includeResultMetadata: true },
     );
 
     if (leased === null) {
@@ -101,6 +101,7 @@ export async function POST(req: Request) {
     if (!b) {
     
         console.log("Ca't find the data: i = ", i, " ",  windowEnd.toLocaleString());
+        continue;
     };
 
     try {
