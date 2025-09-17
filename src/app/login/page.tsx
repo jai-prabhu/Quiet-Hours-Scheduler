@@ -35,6 +35,7 @@ interface HaveAccountProps {
   onChange: (val: boolean) => void;
 }
 
+// work around for calling the useSearchParams
 const GetHaveAccount = ( { onChange }: HaveAccountProps ) => {
 
   const params = useSearchParams();
