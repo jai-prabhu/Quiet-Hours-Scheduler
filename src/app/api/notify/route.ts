@@ -64,7 +64,7 @@ const windowEnd = new Date(now.getTime() + 60_000);
     const b = leased?.value;
     if (!b) {
     
-        console.log("Ca't find the data: ", windowEnd.toDateString());
+        console.log("Ca't find the data: ", windowEnd.toLocaleString());
         break;
     };
 
