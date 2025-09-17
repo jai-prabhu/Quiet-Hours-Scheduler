@@ -90,7 +90,7 @@ export async function POST(req: Request) {
     const b = leased?.value;
     if (!b) {
     
-        console.log("Ca't find the data: ", windowEnd.toLocaleString());
+        console.log("Ca't find the data: i = ", i, " ",  windowEnd.toLocaleString());
         break;
     };
 
