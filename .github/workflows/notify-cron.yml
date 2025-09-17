@@ -15,13 +15,13 @@ jobs:
     steps:
     - name: Call /api/notify
       env:
-        URL: ${{ secrets.CRON_SECRET }}
+        URL: ${{ secrets.NOTIFY_URL }}
         SECRET: ${{ secrets.CRON_SECRET }}
       run: |
-        STATUS=$(curl -s -o /tmp/out/json -w "%{http_code}" \
+        STATUS=$(curl -s -o /tmp/out.json -w "%{http_code}" \
           -X POST "$URL" \
           -H "Authorization: Bearer $SECRET" \
-          -H "Content-type:  application/json" \
+          -H "Content-Type:  application/json" \
           --data "{}" || true)
         cat /tmp/out.json || true
         test "$STATUS" = "200"
