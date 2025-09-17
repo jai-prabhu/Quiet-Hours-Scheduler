@@ -18,7 +18,7 @@ jobs:
         URL: ${{ secrets.NOTIFY_URL }}
         SECRET: ${{ secrets.CRON_SECRET }}
       run: |
-        STATUS=$(curl -s -o /tmp/out.json -w "%{http_code}" \
+        STATUS=$(curl -sS -L -o /tmp/out.json -w "%{http_code}" \
           -X POST "$URL" \
           -H "Authorization: Bearer $SECRET" \
           -H "Content-Type: application/json" \
