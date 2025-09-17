@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase-client"; // make sure this path mat
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import { Clock, User, Calendar, LogOut, Plus, Trash2 } from "lucide-react";
 
 dayjs.extend(utc);
 dayjs.extend(isSameOrBefore);
@@ -26,6 +27,7 @@ export default function Dashboard() {
   const [endLocal, setEndLocal] = useState("");
   const [items, setItems] = useState<Block[]>([]);
   const [loading, setLoading] = useState(false);
+  const [removing, setRemoving] = useState(false);
   const router = useRouter();
 
   // helper: format Date -> 'YYYY-MM-DDTHH:mm' in LOCAL time
@@ -120,12 +122,16 @@ export default function Dashboard() {
   }
 
   async function remove(id: string) {
+
+    setRemoving(true);
     const headers = await authHeader();
     const res = await fetch(`/api/blocks/${id}`, {
       method: "DELETE",
       headers,
     });
     if (res.ok) await refresh();
+
+    setRemoving(false);
   }
 
   const handleSignOut = async () => {
@@ -138,84 +144,197 @@ export default function Dashboard() {
   const endMin = startLocal || nowLocalMin;
 
   return (
-    <main className="max-w-2xl mx-auto p-6 space-y-8">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Dashboard</h1>
-          <p className="text-sm text-gray-500">Signed in as: {email ?? "..."}</p>
-          <p className="text-xs text-gray-500">
-            Timezone: {Intl.DateTimeFormat().resolvedOptions().timeZone}
-          </p>
-        </div>
-        <button className="rounded-lg px-4 py-2 border" onClick={handleSignOut}>
-          Sign Out
-        </button>
-      </header>
-
-      <section className="border rounded-xl p-4">
-        <h2 className="font-medium mb-3">Add Quiet Block</h2>
-        <form onSubmit={createBlock} className="grid gap-3">
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="border rounded px-3 py-2"
-            placeholder="Title"
-            required
-          />
-
-          <label className="text-sm">Start</label>
-          <input
-            type="datetime-local"
-            value={startLocal}
-            onChange={(e) => setStartLocal(e.target.value)}
-            className="border rounded px-3 py-2"
-            step={60}
-            min={nowLocalMin} // ✅ local min
-            required
-          />
-
-          <label className="text-sm">End</label>
-          <input
-            type="datetime-local"
-            value={endLocal}
-            onChange={(e) => setEndLocal(e.target.value)}
-            className="border rounded px-3 py-2"
-            step={60}
-            min={endMin} // ✅ cannot be before start
-            required
-          />
-
-          <button type="submit" disabled={loading} className="rounded-lg px-4 py-2 border">
-            {loading ? "Saving…" : "Create Block"}
-          </button>
-        </form>
-      </section>
-
-      <section className="border rounded-xl p-4">
-        <h2 className="font-medium mb-3">Upcoming Blocks</h2>
-        <ul className="space-y-2">
-          {items.map((b) => (
-            <li key={b._id} className="flex items-center justify-between border rounded px-3 py-2">
-              <div className="text-sm">
-                <div className="font-medium">{b.title}</div>
-                <div>
-                  {new Date(b.startAt).toLocaleString()} → {new Date(b.endAt).toLocaleString()}
+    <div className="min-h-screen bg-background">
+      <div className="max-w-4xl mx-auto p-6 space-y-8">
+        {/* Enhanced Header */}
+        <header className="bg-card rounded-xl p-6 shadow-sm border border-border">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-primary/10 rounded-lg">
+                <Clock className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-foreground">Focus Dashboard</h1>
+                <p className="text-muted-foreground mt-1">Manage your quiet blocks and stay productive</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="text-right">
+                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                  <User className="h-4 w-4" />
+                  <span>{email ?? "Loading..."}</span>
                 </div>
-                <div className="text-xs text-gray-500">
-                  notify at: {new Date(b.notifyAt).toLocaleString()} · status: {b.status}
+                <div className="flex items-center space-x-2 text-xs text-muted-foreground mt-1">
+                  <Calendar className="h-3 w-3" />
+                  <span>{Intl.DateTimeFormat().resolvedOptions().timeZone}</span>
                 </div>
               </div>
               <button
-                onClick={() => remove(b._id)}
-                className="text-sm text-red-500 hover:underline"
+                onClick={handleSignOut}
+                className="flex items-center space-x-2 px-4 py-2 bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground rounded-lg transition-colors duration-200"
               >
-                Remove
+                <LogOut className="h-4 w-4" />
+                <span>Sign Out</span>
               </button>
-            </li>
-          ))}
-          {items.length === 0 && <p className="text-sm text-gray-500">No blocks yet.</p>}
-        </ul>
-      </section>
-    </main>
-  );
+            </div>
+          </div>
+        </header>
+
+        {/* Enhanced Form Section */}
+        <section className="bg-card rounded-xl p-6 shadow-sm border border-border">
+          <div className="flex items-center space-x-3 mb-6">
+            <div className="p-2 bg-secondary/10 rounded-lg">
+              <Plus className="h-5 w-5 text-secondary" />
+            </div>
+            <h2 className="text-xl font-semibold text-foreground">Create New Quiet Block</h2>
+          </div>
+
+          <form onSubmit={createBlock} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">Block Title</label>
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full px-4 py-3 bg-input border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 text-foreground placeholder-muted-foreground"
+                placeholder="Enter a descriptive title for your focus time"
+                required
+              />
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Start Time</label>
+                <input
+                  type="datetime-local"
+                  value={startLocal}
+                  onChange={(e) => setStartLocal(e.target.value)}
+                  className="w-full px-4 py-3 bg-input border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 text-foreground"
+                  step={60}
+                  min={nowLocalMin}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">End Time</label>
+                <input
+                  type="datetime-local"
+                  value={endLocal}
+                  onChange={(e) => setEndLocal(e.target.value)}
+                  className="w-full px-4 py-3 bg-input border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 text-foreground"
+                  step={60}
+                  min={endMin}
+                  required
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-primary-foreground font-medium rounded-lg transition-colors duration-200 disabled:cursor-not-allowed
+              cursor-pointer"
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary-foreground border-t-transparent"></div>
+                  <span>Creating Block...</span>
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4" />
+                  <span>Create Quiet Block</span>
+                </>
+              )}
+            </button>
+          </form>
+        </section>
+
+        {/* Enhanced Blocks List */}
+        <section className="bg-card rounded-xl p-6 shadow-sm border border-border">
+          <div className="flex items-center space-x-3 mb-6">
+            <div className="p-2 bg-accent/10 rounded-lg">
+              <Calendar className="h-5 w-5 text-accent" />
+            </div>
+            <h2 className="text-xl font-semibold text-foreground">Upcoming Quiet Blocks</h2>
+            {items.length > 0 && (
+              <span className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full font-medium">
+                {items.length} scheduled
+              </span>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            {items.map((b) => (
+              <div
+                key={b._id}
+                className="bg-muted/30 border border-border rounded-lg p-4 hover:shadow-md transition-all duration-200"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <h3 className="font-semibold text-foreground text-lg">{b.title}</h3>
+                      <span
+                        className={`px-2 py-1 text-xs rounded-full font-medium ${
+                          b.status === "done"
+                            ? "bg-green-100 text-green-800"
+                            : b.status === "processing"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-blue-100 text-blue-800"
+                        }`}
+                      >
+                        {b.status}
+                      </span>
+                    </div>
+
+                    <div className="space-y-1 text-sm text-muted-foreground">
+                      <div className="flex items-center space-x-2">
+                        <Clock className="h-4 w-4" />
+                        <span>
+                          {new Date(b.startAt).toLocaleString()} → {new Date(b.endAt).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs">Notification:</span>
+                        <span>{new Date(b.notifyAt).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => remove(b._id)}
+                    className="flex items-center space-x-1 px-3 py-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors duration-200 group cursor-pointer"
+                  >
+                    {removing ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-destructive border-t-transparent mr-4"></div>
+                        <span className="text-sm">Removing...</span>
+                      </>
+                    ): (
+                      <>
+                        <Trash2 className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
+                        <span className="text-sm">Remove</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            {items.length === 0 && (
+              <div className="text-center py-12">
+                <div className="p-4 bg-muted/20 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                  <Calendar className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <p className="text-muted-foreground text-lg mb-2">No quiet blocks scheduled</p>
+                <p className="text-muted-foreground text-sm">
+                  Create your first block above to get started with focused work sessions.
+                </p>
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
+    </div>
+  )
 }

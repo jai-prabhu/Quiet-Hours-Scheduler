@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 import crypto from "node:crypto";
 import { getDb } from "@/lib/mongo";
 import sgMail from "@sendgrid/mail";
-import type { Collection, Document } from "mongodb";
 
 export const runtime = "nodejs";
 
@@ -13,25 +12,6 @@ function timingSafeEq(a: string, b: string) {
   return crypto.timingSafeEqual(A, B);
 }
 
-async function logDebugSnapshot(col: Collection<Document>, now: Date, windowEnd: Date) {
-  // Unified counters that match your $expr leasing logic
-  const qStatus   = { status: "pending" };
-  const qNotified = { $or: [ { notifiedAt: null }, { notifiedAt: { $exists: false } } ] };
-  const qLease    = { $or: [ { leaseUntil: { $exists: false } }, { leaseUntil: { $lte: now } } ] };
-  const qTimeExpr = { $expr: { $lte: [ { $toDate: "$notifyAt" }, windowEnd ] } };
-
-  const [cTotal, cStatus, cNotified, cLease, cTime, cFinal] = await Promise.all([
-    col.estimatedDocumentCount(),
-    col.countDocuments(qStatus),
-    col.countDocuments(qNotified),
-    col.countDocuments(qLease),
-    col.countDocuments(qTimeExpr),
-    col.countDocuments({ ...qStatus, ...qNotified, ...qLease, ...qTimeExpr }),
-  ]);
-
-  console.log("[notify] counts", { cTotal, cStatus, cNotified, cLease, cTime, cFinal, windowEnd });
-
-}
 
 export async function POST(req: Request) {
   const secret = (process.env.CRON_SECRET ?? "").trim();
@@ -59,7 +39,6 @@ export async function POST(req: Request) {
   const now = new Date();
   const windowEnd = new Date(now.getTime() + 60_000);
 
-  await logDebugSnapshot(col, now, windowEnd);
 
   let processed = 0;
   const limit = 100;
@@ -87,26 +66,16 @@ export async function POST(req: Request) {
     { sort: { notifyAt: 1 }, includeResultMetadata: true },
     );
 
-    if (leased === null) {
 
-        console.log("It can't be null");
-    }
-
-    else {
-
-        console.log("I am actually not a null");
-    }
 
     const b = leased?.value;
     if (!b) {
     
-        console.log("Ca't find the data: i = ", i, " ",  windowEnd.toLocaleString());
         break;
     };
 
     try {
       if (!b.user_email) {
-        console.log("Failes to get the Email")
         throw new Error("Missing userEmail")
     };
 
