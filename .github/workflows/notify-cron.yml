@@ -15,7 +15,7 @@ jobs:
     steps:
     - name: Call /api/notify
       env:
-        URL: ${{ secrets.NOTIFY_URL }}
+        URL: https://quiet-hours-scheduler-jade.vercel.app/api/notify
         SECRET: ${{ secrets.CRON_SECRET }}
       run: |
         STATUS=$(curl -sS -L -o /tmp/out.json -w "%{http_code}" \
