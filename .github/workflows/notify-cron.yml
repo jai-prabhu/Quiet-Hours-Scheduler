@@ -21,7 +21,9 @@ jobs:
         STATUS=$(curl -s -o /tmp/out.json -w "%{http_code}" \
           -X POST "$URL" \
           -H "Authorization: Bearer $SECRET" \
-          -H "Content-Type:  application/json" \
+          -H "Content-Type: application/json" \
           --data "{}" || true)
+        echo "HTTP status $STATUS"
+        echp "Response body:"
         cat /tmp/out.json || true
         test "$STATUS" = "200"
