@@ -57,7 +57,11 @@ export async function POST(req: Request) {
     );
 
     const b = leased?.value;
-    if (!b) break;
+    if (!b) {
+    
+        console.log("Ca't find the data: ");
+        break;
+    };
 
     try {
       if (!b.userEmail) throw new Error("Missing userEmail");
