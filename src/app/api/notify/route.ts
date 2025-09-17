@@ -87,11 +87,20 @@ export async function POST(req: Request) {
     { sort: { notifyAt: 1 }, returnDocument: "after" }
     );
 
+    if (leased === null) {
+
+        console.log("It can't be null");
+    }
+
+    else {
+
+        console.log("I am actually not a null");
+    }
+
     const b = leased?.value;
     if (!b) {
     
         console.log("Ca't find the data: i = ", i, " ",  windowEnd.toLocaleString());
-        break;
     };
 
     try {
