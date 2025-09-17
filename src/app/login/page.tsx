@@ -1,9 +1,55 @@
 'use client';
 
 import { login, signup } from './actions'
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { UserIcon, LockIcon, MailIcon } from "lucide-react";
+
+
+const Alert = ({ haveAccount }: {haveAccount: boolean}) =>{
+
+  const params = useSearchParams();
+
+  return (
+    <>
+      {
+          params.get("success") && haveAccount && (
+            <div className='px-4 py-2 bg-red-500/10 text-red-500 rounded-lg border border-red-600'>
+              Email or Password Incorrect
+            </div>
+          )
+        }
+        {
+          params.get("register") && !haveAccount && (
+            <div className='px-4 py-2 bg-red-500/10 text-red-500 rounded-lg border border-red-600'>
+              Verification link is expired!
+            </div>
+          )
+        }
+    </>
+  )
+}
+
+interface HaveAccountProps {
+
+  onChange: (val: boolean) => void;
+}
+
+const GetHaveAccount = ( { onChange }: HaveAccountProps ) => {
+
+  const params = useSearchParams();
+
+  const mode = params.get('mode');
+
+  useEffect(() => {
+
+    onChange(mode === 'register' ? false : true)
+  }, [mode])
+
+  return (
+    <></>
+  )
+}
 
 export default function LoginPage() {
 
@@ -14,33 +60,20 @@ export default function LoginPage() {
   const [ passwordError, setPasswordError ] = useState(false);
 
   const router = useRouter();
-  const params = useSearchParams();
-
-  useEffect(() => {
-
-    if (params.get('mode') && params.get('mode') === 'register') setHaveAccount(false);
-    
-  }, [params])
+  
 
   return (
     <div className='max-w-screen w-full min-h-screen bg-gradient-to-br from-black via-gray-900 to-black'
     style={{fontFamily: "var(--font-poppins)"}}>
       <div className='container max-w-md mx-auto'>
+      
       <div className='flex flex-col gap-8 w-full min-h-screen items-center justify-center'>
-        {
-          params.get("success") && haveAccount && (
-            <div className='px-4 py-2 bg-red-500/10 text-red-500 rounded-lg border border-red-600'>
-              Email or Password Incorrect
-            </div>
-          )
-        }
-        {
-          params.get("signup") && !haveAccount && (
-            <div className='px-4 py-2 bg-red-500/10 text-red-500 rounded-lg border border-red-600'>
-              Verification link is expired!
-            </div>
-          )
-        }
+        <Suspense>
+          <Alert haveAccount={haveAccount}/>
+          <GetHaveAccount onChange={e => {
+            if (haveAccount !== e) setHaveAccount(e);
+          }}/>
+        </Suspense>
         <h1 className='inline-flex items-center justidycenter gap-3 text-white text-2xl font-mediumd'>
           <UserIcon/>
           { haveAccount ? `Log In` : `Register` }

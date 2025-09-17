@@ -24,5 +24,5 @@ export async function GET(request: NextRequest) {
   }
 
   // redirect the user to an error page with some instructions
-  redirect('/login?signup=failed&mode=register')
+  redirect('/login?register=failed&mode=register')
 }
