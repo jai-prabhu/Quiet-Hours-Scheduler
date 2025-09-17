@@ -16,6 +16,7 @@ jobs:
     - name: Call /api/notify
       env:
         URL: ${{ secrets.CRON_SECRET }}
+        SECRET: ${{ secrets.CRON_SECRET }}
       run: |
         STATUS=$(curl -s -o /tmp/out/json -w "%{http_code}" \
           -X POST "$URL" \
