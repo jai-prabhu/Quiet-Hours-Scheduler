@@ -59,7 +59,7 @@ export async function POST(req: Request) {
     const b = leased?.value;
     if (!b) {
 
-        NextResponse.json({ ok: true, processed }, {status: 205})
+        return NextResponse.json({ ok: true, processed }, {status: 205});
     };
 
     try {
