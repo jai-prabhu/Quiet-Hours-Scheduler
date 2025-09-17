@@ -1,16 +1,36 @@
+// app/api/notify/route.ts
 import { NextResponse } from "next/server";
+import crypto from "node:crypto";
 import { getDb } from "@/lib/mongo";
 import sgMail from "@sendgrid/mail";
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
-
 export const runtime = "nodejs";
 
-export async function POST(req: Request) {
+function timingSafeEq(a: string, b: string) {
+  const A = Buffer.from(a), B = Buffer.from(b);
+  if (A.length !== B.length) return false;
+  return crypto.timingSafeEqual(A, B);
+}
 
+export async function POST(req: Request) {
+  const secret = (process.env.CRON_SECRET ?? "").trim();
+  if (!secret) return NextResponse.json({ error: "CRON_SECRET missing" }, { status: 500 });
+
+  // Auth (trim, timing-safe)
   const auth = req.headers.get("authorization") || "";
-  const ok = auth === `Bearer ${process.env.CRON_SECRET}`;
-  if (!ok) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
+  if (!timingSafeEq(token, secret)) {
+    console.log("notify 401", { hasBearer: auth.startsWith("Bearer "), tokenLen: token.length });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // SendGrid readiness (fail fast with clear message)
+  const sgKey = process.env.SENDGRID_API_KEY;
+  const from = process.env.FROM_EMAIL;
+  if (!sgKey || !from) {
+    return NextResponse.json({ error: "Email not configured" }, { status: 500 });
+  }
+  sgMail.setApiKey(sgKey);
 
   const db = await getDb();
   const col = db.collection("quiet_blocks");
@@ -19,23 +39,24 @@ export async function POST(req: Request) {
   const inOneMinute = new Date(now.getTime() + 60_000);
 
   let processed = 0;
-  const limit = 100; // per run
+  const limit = 100;
 
   for (let i = 0; i < limit; i++) {
-
     const leased = await col.findOneAndUpdate(
       {
         status: "pending",
         notifiedAt: null,
-        notifyAt: { $lte: inOneMinute.toISOString() },
+        $or: [{ leaseUntil: { $exists: false } }, { leaseUntil: { $lte: now } }],
+        // IMPORTANT: Date -> Date compare (NOT string)
+        notifyAt: { $lte: inOneMinute },
       },
-      { $set: { status: "processing" } },
+      {
+        $set: { status: "processing", leaseUntil: new Date(now.getTime() + 2 * 60_000) },
+      },
       { sort: { notifyAt: 1 }, returnDocument: "after" }
     );
 
-    if (leased === null) break;
-
-    const b = leased.value;
+    const b = leased?.value;
     if (!b) break;
 
     try {
@@ -48,34 +69,37 @@ export async function POST(req: Request) {
         <p><small>${new Date(b.startAt).toLocaleString()} → ${new Date(b.endAt).toLocaleString()}</small></p>
       `;
 
-      await sgMail.send({
-        to: b.userEmail,
-        from: process.env.FROM_EMAIL!,
-        subject,
-        html,
-      });
+      await sgMail.send({ to: b.userEmail, from, subject, html });
 
       await col.updateOne(
         { _id: b._id },
-        { $set: { status: "done", notifiedAt: new Date().toISOString() } }
+        { $set: { status: "done", notifiedAt: new Date(), leaseUntil: null } }
       );
       processed++;
-    } catch (e) {
-
-      await col.updateOne({ _id: b._id }, { $set: { status: "pending" } });
-
+    } catch (e: unknown) {
+      const err = e as { code?: string; message?: string };
+      console.error("notify send failed", { id: String(b._id), code: err?.code, msg: err?.message });
+      await col.updateOne(
+        { _id: b._id },
+        { $set: { status: "pending", leaseUntil: null }, $inc: { attempts: 1 } }
+      );
+      // Optional: backoff if attempts too high:
+      // if ((b.attempts??0) >= 5) set status:"error" to avoid infinite loops
     }
   }
 
-  return NextResponse.json({ ok: true, processed });
+  return NextResponse.json({ ok: true, processed, windowTo: inOneMinute.toISOString() });
 }
 
 export async function GET(req: Request) {
-  const url = new URL(req.url);
-  const token = url.searchParams.get("token");
-  if (token !== process.env.CRON_SECRET) {
+  const secret = (process.env.CRON_SECRET ?? "").trim();
+  const token = new URL(req.url).searchParams.get("token")?.trim() || "";
+  if (!timingSafeEq(token, secret)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const res = await POST(new Request(req.url, { method: "POST", headers: { authorization: `Bearer ${process.env.CRON_SECRET}` } }));
-  return res;
+  // Reuse POST logic
+  return POST(new Request(new URL(req.url).origin + "/api/notify", {
+    method: "POST",
+    headers: { authorization: `Bearer ${secret}` },
+  }));
 }
