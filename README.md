@@ -57,11 +57,13 @@ Data is stored in MongoDB.
 git clone https://github.com/jai-prabhu/Quiet-Hours-Scheduler.git
 ```
 ## Setup ENV Variables
+```bash
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 MONGODB_URI=your-mongodb-connection-string
 SENDGRID_API=smtp.example.com
 FROM_EMAIL=emaol@example.com
+```
 
 ## Run Development
 
