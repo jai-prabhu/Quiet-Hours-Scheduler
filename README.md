@@ -35,7 +35,6 @@ Data is stored in MongoDB.
 - Time Block Creation Interface
 - Automated Email Notifications  
 - No Duplicate Notifications for Same Time Block  
-- Admin Panel (Optional: describe if you added one)
 
 ---
 
@@ -47,7 +46,7 @@ Data is stored in MongoDB.
   - Row-Level Security
   - Edge Functions (for CRON)
 - [MongoDB](https://www.mongodb.com/)
-- [Nodemailer / Supabase Email Trigger] (whichever you used)
+- [SendGrid](https://sendgrid.com/en-us)
 
 ---
 
@@ -55,16 +54,14 @@ Data is stored in MongoDB.
 
 1. Clone the repository  
 ```bash
-git clone https://github.com/yourusername/quiet-hours-scheduler.git
+git clone https://github.com/jai-prabhu/Quiet-Hours-Scheduler.git
 ```
 ## Setup ENV Variables
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 MONGODB_URI=your-mongodb-connection-string
-EMAIL_HOST=smtp.example.com
-EMAIL_PORT=587
-EMAIL_USER=your-email@example.com
-EMAIL_PASS=your-email-password
+SENDGRID_API=smtp.example.com
+FROM_EMAIL=emaol@example.com
 
 ## Run Development
 
