@@ -60,15 +60,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Block Overlaps an existing one" }, { status: 409 });
   }
 
-  const now = dayjs.utc().toISOString();
+  const now = dayjs.utc();
 
   const doc = {
     user_id: user.id,
     user_email: user.email ?? null,
     title: (title ?? `Quiet Block`).toString().trim(),
-    startAt: start.toISOString(),
-    endAt: end.toISOString(),
-    notifyAt: start.subtract(10, "minute").toISOString(),
+    startAt: start,
+    endAt: end,
+    notifyAt: start.subtract(10, "minute"),
     notifiedAt: null as string | null,
     status: `pending` as `pending` | `processing` | `done`,
     createdAt: now,
