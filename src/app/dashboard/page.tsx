@@ -144,34 +144,34 @@ export default function Dashboard() {
   const endMin = startLocal || nowLocalMin;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
       <div className="max-w-4xl mx-auto p-6 space-y-8">
         {/* Enhanced Header */}
-        <header className="bg-card rounded-xl p-6 shadow-sm border border-border">
+        <header className="bg-gray-700 rounded-xl p-6 shadow-sm border border-gray-700">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="p-3 bg-primary/10 rounded-lg">
                 <Clock className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-foreground">Focus Dashboard</h1>
-                <p className="text-muted-foreground mt-1">Manage your quiet blocks and stay productive</p>
+                <h1 className="text-3xl font-bold text-background">Focus Dashboard</h1>
+                <p className="text-gray-400 mt-1">Manage your quiet blocks and stay productive</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-right">
-                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                <div className="flex items-center space-x-2 text-sm text-gray-400">
                   <User className="h-4 w-4" />
                   <span>{email ?? "Loading..."}</span>
                 </div>
-                <div className="flex items-center space-x-2 text-xs text-muted-foreground mt-1">
+                <div className="flex items-center space-x-2 text-xs text-gray-400 mt-1">
                   <Calendar className="h-3 w-3" />
                   <span>{Intl.DateTimeFormat().resolvedOptions().timeZone}</span>
                 </div>
               </div>
               <button
                 onClick={handleSignOut}
-                className="flex items-center space-x-2 px-4 py-2 bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground rounded-lg transition-colors duration-200"
+                className="flex items-center space-x-2 px-4 py-2 bg-primary hover:bg-teal-600 text-white cursor-pointer hover:text-background rounded-lg transition-colors duration-200"
               >
                 <LogOut className="h-4 w-4" />
                 <span>Sign Out</span>
@@ -181,21 +181,22 @@ export default function Dashboard() {
         </header>
 
         {/* Enhanced Form Section */}
-        <section className="bg-card rounded-xl p-6 shadow-sm border border-border">
+        <section className="bg-gray-700 rounded-xl p-6 shadow-sm border border-gray-700">
           <div className="flex items-center space-x-3 mb-6">
             <div className="p-2 bg-secondary/10 rounded-lg">
               <Plus className="h-5 w-5 text-secondary" />
             </div>
-            <h2 className="text-xl font-semibold text-foreground">Create New Quiet Block</h2>
+            <h2 className="text-xl font-semibold text-background">Create New Quiet Block</h2>
           </div>
 
           <form onSubmit={createBlock} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Block Title</label>
+              <label className="block text-sm font-medium text-background mb-2">Block Title</label>
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-4 py-3 bg-input border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 text-foreground placeholder-muted-foreground"
+                className="w-full px-4 py-3 border border-gray-500 bg-gray-700 rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent 
+                transition-all duration-200 text-gray-100 placeholder-gray-500-foreground"
                 placeholder="Enter a descriptive title for your focus time"
                 required
               />
@@ -203,12 +204,13 @@ export default function Dashboard() {
 
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Start Time</label>
+                <label className="block text-sm font-medium text-background mb-2">Start Time</label>
                 <input
                   type="datetime-local"
                   value={startLocal}
                   onChange={(e) => setStartLocal(e.target.value)}
-                  className="w-full px-4 py-3 bg-input border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 text-foreground"
+                  className="w-full px-4 py-3 border border-gray-500 bg-gray-700 rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent 
+                transition-all duration-200 text-gray-100 placeholder-gray-500-foreground"
                   step={60}
                   min={nowLocalMin}
                   required
@@ -216,12 +218,13 @@ export default function Dashboard() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">End Time</label>
+                <label className="block text-sm font-medium text-background mb-2">End Time</label>
                 <input
                   type="datetime-local"
                   value={endLocal}
                   onChange={(e) => setEndLocal(e.target.value)}
-                  className="w-full px-4 py-3 bg-input border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 text-foreground"
+                  className="w-full px-4 py-3 border border-gray-500 bg-gray-700 rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent 
+                transition-all duration-200 text-gray-100 placeholder-gray-500-foreground"
                   step={60}
                   min={endMin}
                   required
@@ -251,12 +254,12 @@ export default function Dashboard() {
         </section>
 
         {/* Enhanced Blocks List */}
-        <section className="bg-card rounded-xl p-6 shadow-sm border border-border">
+        <section className="bg-gray-700 rounded-xl p-6 shadow-sm border border-gray-700">
           <div className="flex items-center space-x-3 mb-6">
             <div className="p-2 bg-accent/10 rounded-lg">
               <Calendar className="h-5 w-5 text-accent" />
             </div>
-            <h2 className="text-xl font-semibold text-foreground">Upcoming Quiet Blocks</h2>
+            <h2 className="text-xl font-semibold text-background">Upcoming Quiet Blocks</h2>
             {items.length > 0 && (
               <span className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full font-medium">
                 {items.length} scheduled
@@ -268,12 +271,12 @@ export default function Dashboard() {
             {items.map((b) => (
               <div
                 key={b._id}
-                className="bg-muted/30 border border-border rounded-lg p-4 hover:shadow-md transition-all duration-200"
+                className="bg-gray-500/30 border bg-gray-700 rounded-lg p-4 hover:shadow-md transition-all duration-200"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="font-semibold text-foreground text-lg">{b.title}</h3>
+                      <h3 className="font-semibold text-background text-lg">{b.title}</h3>
                       <span
                         className={`px-2 py-1 text-xs rounded-full font-medium ${
                           b.status === "done"
@@ -287,7 +290,7 @@ export default function Dashboard() {
                       </span>
                     </div>
 
-                    <div className="space-y-1 text-sm text-muted-foreground">
+                    <div className="space-y-1 text-sm text-gray-300">
                       <div className="flex items-center space-x-2">
                         <Clock className="h-4 w-4" />
                         <span>
@@ -303,7 +306,7 @@ export default function Dashboard() {
 
                   <button
                     onClick={() => remove(b._id)}
-                    className="flex items-center space-x-1 px-3 py-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors duration-200 group cursor-pointer"
+                    className="flex items-center space-x-1 px-3 py-2 text-red-500 hover:bg-destructive/10 rounded-lg transition-colors duration-200 group cursor-pointer"
                   >
                     {removing ? (
                       <>
@@ -323,11 +326,11 @@ export default function Dashboard() {
 
             {items.length === 0 && (
               <div className="text-center py-12">
-                <div className="p-4 bg-muted/20 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                  <Calendar className="h-8 w-8 text-muted-foreground" />
+                <div className="p-4 bg-gray-500/20 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                  <Calendar className="h-8 w-8 text-gray-300" />
                 </div>
-                <p className="text-muted-foreground text-lg mb-2">No quiet blocks scheduled</p>
-                <p className="text-muted-foreground text-sm">
+                <p className="text-gray-300 text-lg mb-2">No quiet blocks scheduled</p>
+                <p className="text-gray-300 text-sm">
                   Create your first block above to get started with focused work sessions.
                 </p>
               </div>
